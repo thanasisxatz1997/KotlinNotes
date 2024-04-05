@@ -87,6 +87,35 @@ fun divide(num1:Int,num2:Int):Double{
 
 _____________________________________________________________
 
+Map,Copy
+
+Map
+//Map transforms a list of items by iterating through
+val numbers=listOf(1,2,3)
+val doubled=numbers.map{ it * 2 } //2,4,6
+
+Copy
+
+//The bellow lines of code will first create an object of data class Vase with blue color and Rose design
+//Then creates another object by copying the first, changing the value of one of the properties and keeping the value of the others.
+val blueRoseVase=Vase(color = "Blue" , design = "Rose") //Vase(color=Blue,design=Rose)
+val redRoseVase=blueRoseVase.copy(color="Red") //Vase(color=Red,design=Rose)
+
+data class Vase(val color:String,val design:String)
+
+_____________________________________________________________
+
+let
+
+//let allows you to use and transform an object without a confined scope wthout affecting the original object
+//String? means we have a string that can have the value of null (nullable)
+
+val name:String?="Ella"
+name?.let{
+    println(it.toUpperCase())
+}
+_____________________________________________________________
+
 Lambda Expressions
 
 //In this example we create a lambda expression called doubleNumber that accepts an (Int) input and it doubles it and returns the Int result
@@ -407,6 +436,14 @@ Null Safe
 
 val inputValueDouble=inputValue.toDoubleOrNull() ?:0.0    
 
+//Another example
+Button(onClick = {
+            isEditing=false
+            eonEditComplete(editedName,editedQuantity.toIntOrNull() ?:1)
+        }) {
+            Text(text = "Save")
+        }
+
 _____________________________________________________________
 
 Round
@@ -511,5 +548,161 @@ IconButton Composable
 //Composable that creates a button containing an icon
 
 IconButton(onClick = {onEditClick}) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+    Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+}
+
+_____________________________________________________________
+
+wrap content size
+
+//Enables a component to ONLY take the space that it really needs
+
+BasicTextField(
+    value = editedName,
+    onValueChange = {editedName=it},
+    singleLine=true,
+    modifier=Modifier.wrapContentSize().padding(8.dp)
+)
+
+_____________________________________________________________
+
+Replacing it
+
+//We can replace the it with another variable name by using -> 
+
+LazyColumn(
+            modifier= Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ){
+            items(sItems){
+            item ->
+            if(item.isEditing){
+
             }
+        }
+    }
+
+_____________________________________________________________
+
+
+Find an item in a list using the find function
+
+the find funtrion enables us to find an item inside of a list
+val editedItem=sItems.find{it.id==item.id}
+
+_____________________________________________________________
+
+How to modify/edit items inside a list when we dont know wich item we are modifying
+
+// for example here we edit a list item through a composable
+
+items(sItems){
+                item ->
+                if(item.isEditing){
+                    ShoppingItemEditor(item = item, onEditComplete = {
+                        editedName, editedQuantity ->
+                        sItems=sItems.map { it.copy(isEditing = false) }
+                        val editedItem=sItems.find{it.id==item.id}
+                        editedItem?.let{
+                            it.name=editedName
+                            it.quantity=editedQuantity
+                        }
+                    })
+                }else
+                {
+                    ShoppingListItem(item = item, onEditClick = {
+                        sItems=sItems.map{it.copy(isEditing = it.id==item.id)}
+                    }) {}
+                }
+            }
+
+_____________________________________________________________
+
+Find out wich list item is being clicked
+
+ShoppingListItem(item = item, onEditClick = {
+    sItems=sItems.map{it.copy(isEditing = it.id==item.id)}})
+
+
+_____________________________________________________________
+
+Custom View Model class
+
+//This is our View Model (VM)
+class CounterViewModel : ViewModel() {
+    private val _count = mutableStateOf(0)
+    val count : MutableState<Int> =_count
+
+    fun increment(){
+        _count.value++
+    }
+    fun decrement(){
+        _count.value--
+    }
+}
+
+//This is the V (View) in MVVM
+@Composable
+fun CounterApp(viewModel: CounterViewModel){
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Counter: ${viewModel.count.value}", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        Row (
+        ){
+            Button(onClick = { viewModel.increment() }) {
+                Text(text = "Increment")
+            }
+            Button(onClick = { viewModel.decrement() }) {
+                Text(text = "Decrement")
+            }
+        }
+    }
+}
+
+Usage in MainActivity
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            var viewModel:CounterViewModel=viewModel()
+            ShoppingListAppTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    CounterApp(viewModel)
+                }
+            }
+        }
+    }
+}
+
+OLDER VERSION VIEW MODEL IN MainActivity
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val viewModel:CounterViewModel by viewModels()
+            CounterMVVMTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    CounterApp(viewModel)
+                }
+            }
+        }
+    }
+}
+
+_____________________________________________________________
+

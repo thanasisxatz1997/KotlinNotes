@@ -704,5 +704,175 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+Now lets reafactor it by using a repository
+
+VIEW MODEL:
+
+//THIS IS THE VIEW MODEL IN OUR MVVM
+
+class CounterViewModel() : ViewModel() {
+    private val _repository: CounterRepository= CounterRepository()
+    private val _count = mutableStateOf(_repository.getCounter().count)
+
+    val count : MutableState<Int> =_count
+
+    fun increment(){
+        _repository.incrementCounter()
+        _count.value=_repository.getCounter().count
+    }
+    fun decrement(){
+        _repository.decrementCounter()
+        _count.value=_repository.getCounter().count
+    }
+}
+
+MODEL:
+
+//THIS IS THE MODEL IN OUR MVVM
+
+data class CounterModel(var count:Int)
+
+class CounterRepository{
+    private var _counter=CounterModel(0)
+
+    //Getter functions
+    fun getCounter()=_counter
+
+    fun incrementCounter(){
+        _counter.count++
+    }
+
+    fun decrementCounter(){
+        _counter.count--
+    }
+}
+
+VIEW:
+
+//THIS IS THE VIEW IN OUR MVVM
+
+@Composable
+fun CounterApp(viewModel: CounterViewModel){
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Counter: ${viewModel.count.value}", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        Row (
+        ){
+            Button(onClick = { viewModel.increment() }) {
+                Text(text = "Increment")
+            }
+            Button(onClick = { viewModel.decrement() }) {
+                Text(text = "Decrement")
+            }
+        }
+    }
+}
+
+//MAIN ACTIVITY
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val viewModel:CounterViewModel by viewModels()
+            CounterMVVMTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    CounterApp(viewModel)
+                }
+            }
+        }
+    }
+}
+
+
 _____________________________________________________________
 
+Inheritance
+
+class OffSpring: Secondary(),Archer,Singer{
+    override fun archery() {
+        super.archery()
+        println("Archery skills enhanced by Offspring")
+    }
+
+    override fun sing() {
+        super.sing()
+        println("Singing skills enhanced by Offspring")
+    }
+}
+
+interface Archer {
+    fun archery(){
+        println("Archer skills from sir secondary")
+    }
+}
+
+interface Singer {
+    fun sing(){
+        println("Singing skill from lady tertiary")
+    }
+}
+
+open class Secondary:BaseClass() {
+    override fun role(){
+        println("Member of the house secondary")
+    }
+}
+
+class Tertiary:BaseClass() {
+
+    override fun role() {
+        println("Member of the house of tertiary")
+    }
+}
+fun main(){
+    val frank=OffSpring()
+    frank.archery()
+    frank.role()
+    frank.coreValues()
+    frank.sing()
+}
+
+Output:
+
+Archer skills from sir secondary
+Archery skills enhanced by Offspring
+Member of the house secondary
+Core values of house bc
+Singing skill from lady tertiary
+Singing skills enhanced by Offspring
+
+
+_____________________________________________________________
+
+Repository
+
+A repository is a design pattern that acts as a clean api for data access to the rest of the application
+Think of it as a mediatorbetween different data sources, such as remote apis, local data bases, in memory caches
+
+Benefits of a repository:
+    Abstraction
+    Centralized data handling
+    Isolation
+    Flexibillity
+
+
+
+_____________________________________________________________
+
+fetch requests with retrofit implementation
+
+implementation "com.squareup.retrofit2:retrofit:2.9.0"
+
+gson converter implementation
+//this will convert a json object into a kotlin object
+
+implementation "com.squareup.retrofit2:converter-gson:2.9.0"
